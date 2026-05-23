@@ -10,7 +10,7 @@ from app.models.order import Order, OrderItem, OrderStatus
 from app.models.payment import Payment, PaymentProvider, PaymentStatus
 from app.models.product import Product
 from app.services.state_machine import transition, InvalidTransitionError
-from app.services.escrow import initiate_orange_money, initiate_wave
+from app.services.escrow import initiate_orange_money, initiate_wave, release_escrow
 
 router = APIRouter(prefix="/orders", tags=["orders"])
 
@@ -32,21 +32,12 @@ class PayRequest(BaseModel):
     phone: str
 
 
-class OrderResponse(BaseModel):
-    id: str
+class StatusUpdate(BaseModel):
     status: str
-    total_centimes: int
-    delivery_fee_centimes: int
-    service_fee_centimes: int
-    delivery_address: str
-    notes: str | None
-
-    model_config = {"from_attributes": True}
 
 
-@router.post("/", response_model=OrderResponse, status_code=status.HTTP_201_CREATED)
-async def create_order(body: OrderCreate, db: DB, current_user: CurrentUser) -> OrderResponse:
-    # Charger les produits
+@router.post("/", response_model=dict, status_code=status.HTTP_201_CREATED)
+async def create_order(body: OrderCreate, db: DB, current_user: CurrentUser) -> dict:
     product_ids = [i.product_id for i in body.items]
     result = await db.execute(select(Product).where(Product.id.in_(product_ids)))
     products = {p.id: p for p in result.scalars().all()}
@@ -59,8 +50,7 @@ async def create_order(body: OrderCreate, db: DB, current_user: CurrentUser) -> 
             raise HTTPException(status_code=404, detail=f"Produit {item_in.product_id} introuvable")
         if product.stock < item_in.quantity:
             raise HTTPException(status_code=400, detail=f"Stock insuffisant pour {product.name}")
-        subtotal = product.price_centimes * item_in.quantity
-        total += subtotal
+        total += product.price_centimes * item_in.quantity
         items.append(
             OrderItem(
                 product_id=product.id,
@@ -84,7 +74,7 @@ async def create_order(body: OrderCreate, db: DB, current_user: CurrentUser) -> 
         it.order_id = order.id
         db.add(it)
 
-    return OrderResponse.model_validate(order)
+    return {"id": str(order.id), "status": order.status.value, "total_centimes": order.total_centimes}
 
 
 @router.post("/{order_id}/pay")
@@ -112,7 +102,28 @@ async def pay_order(order_id: UUID, body: PayRequest, db: DB, redis: Redis, curr
     db.add(payment)
     order.escrow_ref = pay_data["escrow_ref"]
 
-    return {"redirect_url": pay_data["redirect_url"], "escrow_ref": pay_data["escrow_ref"]}
+    # Transition vers A_PREPARER
+    await transition(order, OrderStatus.A_PREPARER)
+    await redis.publish(f"order:{order_id}", f"status:{OrderStatus.A_PREPARER.value}")
+
+    return {"redirect_url": pay_data.get("redirect_url"), "escrow_ref": pay_data["escrow_ref"]}
+
+
+@router.post("/{order_id}/status")
+async def update_order_status(order_id: UUID, body: StatusUpdate, db: DB, redis: Redis, current_user: CurrentUser) -> dict:
+    result = await db.execute(select(Order).where(Order.id == order_id))
+    order = result.scalar_one_or_none()
+    if not order:
+        raise HTTPException(status_code=404, detail="Commande introuvable")
+
+    try:
+        new_status = OrderStatus(body.status)
+        await transition(order, new_status)
+    except (ValueError, InvalidTransitionError) as e:
+        raise HTTPException(status_code=400, detail=str(e))
+
+    await redis.publish(f"order:{order_id}", f"status:{new_status.value}")
+    return {"status": order.status.value}
 
 
 @router.post("/{order_id}/validate")
@@ -131,23 +142,36 @@ async def validate_order(order_id: UUID, db: DB, redis: Redis, current_user: Cur
     except InvalidTransitionError as e:
         raise HTTPException(status_code=400, detail=str(e))
 
-    # Libérer l'escrow
     if order.payment:
-        from app.services.escrow import release_escrow
         await release_escrow(order.payment)
         order.payment.status = PaymentStatus.RELEASED
 
-    await redis.publish(f"order:{order_id}", f"status:{OrderStatus.VALIDEE.value}")
+    await transition(order, OrderStatus.TERMINEE)
+    await redis.publish(f"order:{order_id}", f"status:{OrderStatus.TERMINEE.value}")
     return {"status": order.status.value}
 
 
-@router.get("/{order_id}", response_model=OrderResponse)
-async def get_order(order_id: UUID, db: DB, current_user: CurrentUser) -> OrderResponse:
-    result = await db.execute(select(Order).where(Order.id == order_id))
+@router.get("/{order_id}")
+async def get_order(order_id: UUID, db: DB, current_user: CurrentUser) -> dict:
+    result = await db.execute(
+        select(Order).options(joinedload(Order.items)).where(Order.id == order_id)
+    )
     order = result.scalar_one_or_none()
     if not order:
         raise HTTPException(status_code=404, detail="Commande introuvable")
-    return OrderResponse.model_validate(order)
+    return {
+        "id": str(order.id),
+        "status": order.status.value,
+        "total_centimes": order.total_centimes,
+        "delivery_fee_centimes": order.delivery_fee_centimes,
+        "service_fee_centimes": order.service_fee_centimes,
+        "delivery_address": order.delivery_address,
+        "notes": order.notes,
+        "items": [
+            {"product_name": i.product_name, "quantity": i.quantity, "unit_price_centimes": i.unit_price_centimes}
+            for i in order.items
+        ],
+    }
 
 
 @router.get("/")
@@ -164,5 +188,7 @@ async def list_orders(db: DB, current_user: CurrentUser) -> list[dict]:
             stmt = stmt.where(Order.vendor_id == vendor.id)
 
     result = await db.execute(stmt.order_by(Order.created_at.desc()).limit(50))
-    orders = result.scalars().all()
-    return [{"id": str(o.id), "status": o.status.value, "total_centimes": o.total_centimes} for o in orders]
+    return [
+        {"id": str(o.id), "status": o.status.value, "total_centimes": o.total_centimes, "created_at": o.created_at.isoformat()}
+        for o in result.scalars().all()
+    ]
