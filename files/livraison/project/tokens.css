@@ -1,0 +1,361 @@
+/* ============================================================
+   Korba — design tokens
+   Marketplace livraison · Glassmorphism doux · 2026
+   ============================================================ */
+
+@import url('https://api.fontshare.com/v2/css?f[]=switzer@200,300,400,500,600,700,800&f[]=clash-display@400,500,600,700&display=swap');
+
+:root {
+  /* Typography ------------------------------------------------ */
+  --font-sans: "Switzer", "Söhne", -apple-system, "Helvetica Neue", Arial, sans-serif;
+  --font-display: "Switzer", "Söhne", -apple-system, sans-serif;
+  --font-mono: "JetBrains Mono", "SF Mono", ui-monospace, monospace;
+
+  /* Neutrals — warm paper ------------------------------------- */
+  --paper:      #FAFAF7;
+  --paper-2:    #F3F1EC;
+  --paper-3:    #E9E6DF;
+  --ink:        #0E1116;
+  --ink-2:      #2B2F36;
+  --ink-3:      #5C616B;
+  --ink-4:      #8A8F98;
+  --ink-5:      #C2C5CB;
+  --line:       rgba(14, 17, 22, 0.08);
+  --line-2:     rgba(14, 17, 22, 0.14);
+
+  /* Brand global accent --------------------------------------- */
+  --brand:      #0E1116;
+
+  /* Role accents — Client (orange épuré) ---------------------- */
+  --client:        #E87B36;
+  --client-deep:   #B85412;
+  --client-tint:   #FFEDDC;
+  --client-tint-2: #FCE0C5;
+  --client-glass:  rgba(232,123,54,0.10);
+
+  /* Role accents — Vendeur (violet/indigo) -------------------- */
+  --vendor:        #6E58F1;
+  --vendor-deep:   #4632C2;
+  --vendor-tint:   #ECE9FE;
+  --vendor-tint-2: #DBD6FC;
+  --vendor-glass:  rgba(110,88,241,0.10);
+
+  /* Role accents — Agence (vert premium) ---------------------- */
+  --agency:        #1F8B5B;
+  --agency-deep:   #0F5B3A;
+  --agency-tint:   #E0F0E6;
+  --agency-tint-2: #C8E3D2;
+  --agency-glass:  rgba(31,139,91,0.10);
+
+  /* Role accents — Livreur (bleu ciel) ------------------------ */
+  --driver:        #5BA4F0;
+  --driver-deep:   #1E6FC6;
+  --driver-tint:   #E5F0FB;
+  --driver-tint-2: #C9DFF6;
+  --driver-glass:  rgba(91,164,240,0.12);
+
+  /* Status ---------------------------------------------------- */
+  --ok:      #1F8B5B;
+  --warn:    #C28714;
+  --danger:  #C8453A;
+  --info:    #2563EB;
+
+  /* Radii ----------------------------------------------------- */
+  --r-sm: 8px;
+  --r-md: 14px;
+  --r-lg: 20px;
+  --r-xl: 28px;
+  --r-2xl: 36px;
+  --r-pill: 999px;
+
+  /* Shadows / glass ------------------------------------------- */
+  --sh-1: 0 1px 2px rgba(14,17,22,0.04), 0 1px 1px rgba(14,17,22,0.03);
+  --sh-2: 0 2px 6px rgba(14,17,22,0.05), 0 8px 24px -8px rgba(14,17,22,0.08);
+  --sh-3: 0 4px 16px rgba(14,17,22,0.06), 0 24px 48px -16px rgba(14,17,22,0.14);
+  --sh-glass: 0 1px 0 rgba(255,255,255,.6) inset, 0 8px 32px -8px rgba(14,17,22,0.10), 0 0 0 0.5px rgba(255,255,255,.5) inset;
+
+  /* Easings --------------------------------------------------- */
+  --ease-out: cubic-bezier(.2,.7,.2,1);
+  --ease-spring: cubic-bezier(.34,1.3,.36,1);
+}
+
+/* Card style modes (Tweaks) ----------------------------------- */
+[data-cards="flat"] .k-card { box-shadow: 0 0 0 1px var(--line); background: #fff; backdrop-filter: none; }
+[data-cards="shadow"] .k-card { box-shadow: var(--sh-2); background: #fff; backdrop-filter: none; }
+
+/* --- GLASS MODE --- */
+[data-cards="glass"] .k-card {
+  background: linear-gradient(155deg, rgba(255,255,255,0.55), rgba(255,255,255,0.28));
+  box-shadow:
+    inset 0 1px 0 rgba(255,255,255,0.85),
+    inset 0 0 0 0.5px rgba(255,255,255,0.6),
+    0 1px 2px rgba(14,17,22,0.05),
+    0 14px 36px -14px rgba(14,17,22,0.18);
+  backdrop-filter: blur(22px) saturate(170%);
+  -webkit-backdrop-filter: blur(22px) saturate(170%);
+  border: 0.5px solid rgba(255,255,255,0.55);
+}
+
+/* Tint phone background with role-colored halos so the blur has something to bite on */
+[data-cards="glass"] .k-phone::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  z-index: 0;
+  background:
+    radial-gradient(60% 35% at 12% 8%,  color-mix(in oklab, var(--role, #E87B36) 38%, transparent), transparent 70%),
+    radial-gradient(55% 35% at 92% 22%, color-mix(in oklab, var(--role, #E87B36) 26%, transparent), transparent 65%),
+    radial-gradient(70% 50% at 50% 105%,color-mix(in oklab, var(--role, #E87B36) 22%, transparent), transparent 70%);
+  filter: saturate(120%);
+  opacity: 0.85;
+}
+[data-cards="glass"] .k-phone > * { position: relative; z-index: 1; }
+
+/* tab bar already glassy; intensify in glass mode */
+[data-cards="glass"] .k-tabbar {
+  background: linear-gradient(180deg, rgba(255,255,255,0.45), rgba(255,255,255,0.25));
+  backdrop-filter: blur(26px) saturate(180%);
+  -webkit-backdrop-filter: blur(26px) saturate(180%);
+  box-shadow:
+    inset 0 1px 0 rgba(255,255,255,0.8),
+    inset 0 0 0 0.5px rgba(255,255,255,0.6),
+    0 12px 30px -12px rgba(14,17,22,0.22);
+}
+
+/* search / inline inputs */
+[data-cards="glass"] .k-phone [style*="box-shadow"][style*="--line"] {}
+
+/* generic floating bars (sticky bottom CTAs use rgba(255,255,255,.92) inline — boost them) */
+[data-cards="glass"] .k-phone [style*="rgba(255,255,255,0.92)"] {
+  background: linear-gradient(180deg, rgba(255,255,255,0.55), rgba(255,255,255,0.32)) !important;
+  backdrop-filter: blur(24px) saturate(180%) !important;
+  -webkit-backdrop-filter: blur(24px) saturate(180%) !important;
+  box-shadow:
+    inset 0 1px 0 rgba(255,255,255,0.85),
+    inset 0 0 0 0.5px rgba(255,255,255,0.55),
+    0 14px 36px -12px rgba(14,17,22,0.22) !important;
+}
+
+/* role-tinted hero cards stay solid (gradient), but add a subtle inner highlight */
+[data-cards="glass"] .k-phone [style*="linear-gradient(160deg, #6E58F1"],
+[data-cards="glass"] .k-phone [style*="linear-gradient(150deg, #6E58F1"],
+[data-cards="glass"] .k-phone [style*="linear-gradient(150deg, #1F8B5B"],
+[data-cards="glass"] .k-phone [style*="linear-gradient(150deg, #5BA4F0"] {
+  box-shadow:
+    inset 0 1px 0 rgba(255,255,255,0.35),
+    inset 0 0 0 0.5px rgba(255,255,255,0.25),
+    0 20px 40px -16px rgba(14,17,22,0.35) !important;
+}
+
+/* Phone shell --------------------------------------------------- */
+.k-phone {
+  width: 360px;
+  height: 760px;
+  border-radius: 38px;
+  background: var(--paper);
+  position: relative;
+  overflow: hidden;
+  box-shadow:
+    inset 0 0 0 1px rgba(14,17,22,0.08),
+    inset 0 0 0 6px #fff,
+    inset 0 0 0 7px rgba(14,17,22,0.06);
+  font-family: var(--font-sans);
+  color: var(--ink);
+  -webkit-font-smoothing: antialiased;
+  font-variant-numeric: tabular-nums;
+  font-feature-settings: "ss01", "ss02";
+  letter-spacing: -0.005em;
+}
+.k-phone * { box-sizing: border-box; }
+
+.k-status {
+  height: 44px;
+  padding: 0 22px 0 28px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--ink);
+  position: relative;
+  z-index: 5;
+}
+.k-status-r { display: flex; gap: 5px; align-items: center; }
+.k-status .ico { width: 16px; height: 11px; display: inline-block; }
+
+.k-scroll {
+  height: calc(760px - 44px);
+  overflow: hidden;
+  position: relative;
+  display: flex;
+  flex-direction: column;
+}
+
+/* Buttons */
+.k-btn {
+  appearance: none;
+  border: 0;
+  font-family: inherit;
+  font-weight: 600;
+  font-size: 15px;
+  letter-spacing: -0.01em;
+  border-radius: var(--r-pill);
+  padding: 14px 20px;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  transition: transform .15s var(--ease-spring), box-shadow .15s, background .15s;
+}
+.k-btn:active { transform: scale(.97); }
+.k-btn-primary { background: var(--ink); color: #fff; box-shadow: 0 4px 14px -4px rgba(14,17,22,0.4); }
+.k-btn-ghost   { background: transparent; color: var(--ink); }
+.k-btn-tinted  { background: var(--paper-2); color: var(--ink); }
+.k-btn-role    { background: var(--role); color: #fff; box-shadow: 0 8px 22px -8px color-mix(in oklab, var(--role) 70%, transparent); }
+
+/* Pills / chips */
+.k-chip {
+  display: inline-flex; align-items: center; gap: 6px;
+  height: 30px; padding: 0 12px;
+  border-radius: var(--r-pill);
+  background: #fff;
+  border: 1px solid var(--line);
+  font-size: 12.5px; font-weight: 500; color: var(--ink-2);
+  white-space: nowrap;
+}
+.k-chip-tinted { background: var(--role-tint); border-color: transparent; color: var(--role-deep); font-weight: 600; }
+.k-chip-solid { background: var(--ink); color: #fff; border-color: transparent; }
+
+/* Badges */
+.k-badge {
+  display: inline-flex; align-items: center; gap: 4px;
+  font-size: 10.5px; font-weight: 600;
+  padding: 3px 7px; border-radius: 6px;
+  letter-spacing: 0.01em; text-transform: uppercase;
+}
+.k-badge-verified { background: #E0F0E6; color: #0F5B3A; }
+.k-badge-pro      { background: #1d1d1f; color: #fff; }
+.k-badge-new      { background: #FFEDDC; color: #B85412; }
+
+/* Cards generic */
+.k-card {
+  background: #fff;
+  border-radius: var(--r-lg);
+  box-shadow: var(--sh-2);
+  position: relative;
+}
+
+/* Section heading helpers */
+.k-h1 { font-family: var(--font-display); font-weight: 600; font-size: 28px; letter-spacing: -0.025em; line-height: 1.05; }
+.k-h2 { font-family: var(--font-display); font-weight: 600; font-size: 20px; letter-spacing: -0.02em; line-height: 1.1; }
+.k-h3 { font-weight: 600; font-size: 15px; letter-spacing: -0.01em; }
+.k-meta { font-size: 12px; color: var(--ink-4); font-weight: 500; }
+.k-eyebrow { font-size: 11px; font-weight: 600; letter-spacing: 0.06em; text-transform: uppercase; color: var(--ink-4); }
+
+/* Tab bar */
+.k-tabbar {
+  position: absolute;
+  left: 12px; right: 12px; bottom: 12px;
+  height: 64px;
+  border-radius: 22px;
+  display: flex;
+  align-items: center;
+  justify-content: space-around;
+  padding: 0 12px;
+  background: rgba(255,255,255,0.85);
+  backdrop-filter: blur(20px) saturate(140%);
+  -webkit-backdrop-filter: blur(20px) saturate(140%);
+  box-shadow: 0 8px 30px -8px rgba(14,17,22,0.18), 0 0 0 0.5px rgba(14,17,22,0.06);
+  z-index: 4;
+}
+.k-tab { display:flex; flex-direction:column; gap:3px; align-items:center; color: var(--ink-4); font-size: 10.5px; font-weight: 500; cursor: pointer; }
+.k-tab svg { width: 22px; height: 22px; }
+.k-tab[data-active="true"] { color: var(--role, var(--ink)); }
+.k-tab[data-active="true"] .k-tab-pill {
+  position:absolute; top: 8px; width:32px; height:4px; border-radius:2px; background: var(--role, var(--ink));
+}
+
+/* Avatar */
+.k-avatar {
+  display:inline-flex; align-items:center; justify-content:center;
+  border-radius: 999px; background: var(--paper-2); color: var(--ink);
+  font-weight: 600; font-size: 12px; flex-shrink: 0;
+  background-size: cover; background-position: center;
+}
+
+/* Star rating */
+.k-stars { display:inline-flex; gap:1px; color: #E8A53C; }
+
+/* Status dot */
+.k-dot { display:inline-block; width:8px; height:8px; border-radius:999px; }
+.k-dot-live { background: #22C55E; box-shadow: 0 0 0 3px rgba(34,197,94,0.18); }
+.k-dot-wait { background: #C28714; }
+.k-dot-off  { background: var(--ink-5); }
+
+/* Map (stylized monochrome) ----------------------------------- */
+.k-map-bg {
+  background:
+    radial-gradient(circle at 80% 18%, rgba(91,164,240,0.18), transparent 55%),
+    radial-gradient(circle at 18% 75%, rgba(232,123,54,0.10), transparent 50%),
+    #EEF1F3;
+  position: relative;
+  overflow: hidden;
+}
+
+/* Utility */
+.k-divide { height: 1px; background: var(--line); }
+.k-row { display:flex; align-items:center; gap: 10px; }
+.k-col { display:flex; flex-direction:column; }
+
+/* Glass surface helper */
+.k-glass {
+  background: linear-gradient(180deg, rgba(255,255,255,0.78), rgba(255,255,255,0.6));
+  backdrop-filter: blur(16px) saturate(140%);
+  -webkit-backdrop-filter: blur(16px) saturate(140%);
+  border: 0.5px solid rgba(255,255,255,0.7);
+  box-shadow: var(--sh-glass);
+}
+
+/* Scrollbar hide for safety */
+.k-phone *::-webkit-scrollbar { display: none; }
+.k-phone * { scrollbar-width: none; }
+
+/* Active role highlight on canvas ----------------------------- */
+[data-active-role] [data-dc-section="vendor"],
+[data-active-role] [data-dc-section="agency"],
+[data-active-role] [data-dc-section="driver"],
+[data-active-role] [data-dc-section="client"] {
+  transition: opacity .3s ease, filter .3s ease;
+}
+[data-active-role="client"] [data-dc-section="vendor"],
+[data-active-role="client"] [data-dc-section="agency"],
+[data-active-role="client"] [data-dc-section="driver"],
+[data-active-role="vendor"] [data-dc-section="client"],
+[data-active-role="vendor"] [data-dc-section="agency"],
+[data-active-role="vendor"] [data-dc-section="driver"],
+[data-active-role="agency"] [data-dc-section="client"],
+[data-active-role="agency"] [data-dc-section="vendor"],
+[data-active-role="agency"] [data-dc-section="driver"],
+[data-active-role="driver"] [data-dc-section="client"],
+[data-active-role="driver"] [data-dc-section="vendor"],
+[data-active-role="driver"] [data-dc-section="agency"] {
+  opacity: 0.32;
+  filter: saturate(0.55);
+}
+[data-active-role="client"] [data-dc-section="vendor"]:hover,
+[data-active-role="client"] [data-dc-section="agency"]:hover,
+[data-active-role="client"] [data-dc-section="driver"]:hover,
+[data-active-role="vendor"] [data-dc-section="client"]:hover,
+[data-active-role="vendor"] [data-dc-section="agency"]:hover,
+[data-active-role="vendor"] [data-dc-section="driver"]:hover,
+[data-active-role="agency"] [data-dc-section="client"]:hover,
+[data-active-role="agency"] [data-dc-section="vendor"]:hover,
+[data-active-role="agency"] [data-dc-section="driver"]:hover,
+[data-active-role="driver"] [data-dc-section="client"]:hover,
+[data-active-role="driver"] [data-dc-section="vendor"]:hover,
+[data-active-role="driver"] [data-dc-section="agency"]:hover {
+  opacity: 1;
+  filter: none;
+}

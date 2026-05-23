@@ -1,0 +1,89 @@
+name: CI/CD Korba
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+jobs:
+  backend-lint-test:
+    name: Backend — Lint & Tests
+    runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgis/postgis:16-3.4
+        env:
+          POSTGRES_USER: korba
+          POSTGRES_PASSWORD: korba
+          POSTGRES_DB: korba_test
+        ports: ["5432:5432"]
+        options: --health-cmd pg_isready --health-interval 10s --health-retries 5
+      redis:
+        image: redis:7-alpine
+        ports: ["6379:6379"]
+        options: --health-cmd "redis-cli ping" --health-interval 10s
+
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: "pip"
+      - name: Install dependencies
+        working-directory: korba/backend
+        run: pip install -e ".[dev]"
+      - name: Lint
+        working-directory: korba/backend
+        run: ruff check .
+      - name: Type check
+        working-directory: korba/backend
+        run: mypy app --ignore-missing-imports
+      - name: Tests
+        working-directory: korba/backend
+        env:
+          DATABASE_URL: postgresql+asyncpg://korba:korba@localhost:5432/korba_test
+          DATABASE_URL_SYNC: postgresql+psycopg2://korba:korba@localhost:5432/korba_test
+          REDIS_URL: redis://localhost:6379/0
+          SECRET_KEY: test-secret-key
+        run: pytest --cov=app --cov-report=term-missing
+
+  frontend-lint-build:
+    name: Frontend — Lint & Build
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "24"
+          cache: "npm"
+          cache-dependency-path: korba/frontend/package-lock.json
+      - name: Install
+        working-directory: korba/frontend
+        run: npm ci
+      - name: Type check
+        working-directory: korba/frontend
+        run: npx tsc --noEmit
+      - name: Build
+        working-directory: korba/frontend
+        run: npm run build
+
+  deploy:
+    name: Deploy to Hetzner
+    needs: [backend-lint-test, frontend-lint-build]
+    if: github.ref == 'refs/heads/main' && github.event_name == 'push'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Deploy via SSH
+        uses: appleboy/ssh-action@v1
+        with:
+          host: ${{ secrets.HETZNER_HOST }}
+          username: ${{ secrets.HETZNER_USER }}
+          key: ${{ secrets.HETZNER_SSH_KEY }}
+          script: |
+            cd /opt/korba
+            git pull origin main
+            docker compose pull
+            docker compose up -d --build
+            docker compose exec api python -m alembic upgrade head
