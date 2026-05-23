@@ -10,8 +10,13 @@ import { DisputeContainer } from '@/containers/DisputeContainer'
 import { VendorHomeContainer } from '@/containers/VendorHomeContainer'
 import { VendorOrderDetailContainer } from '@/containers/VendorOrderDetailContainer'
 import { AgencyDashboardContainer } from '@/containers/AgencyDashboardContainer'
+import { AgencyTeamZonesContainer } from '@/containers/AgencyTeamZonesContainer'
 import { DriverHomeContainer } from '@/containers/DriverHomeContainer'
+import { DriverNavigationContainer } from '@/containers/DriverNavigationContainer'
+import { DriverProofContainer } from '@/containers/DriverProofContainer'
+import { VendorCatalogueContainer } from '@/containers/VendorCatalogueContainer'
 import { NotificationsContainer } from '@/containers/NotificationsContainer'
+import { ProfileContainer } from '@/containers/ProfileContainer'
 
 function RequireAuth({ allowedRoles }: { allowedRoles?: string[] }) {
   const { isAuthenticated, role } = useAuthStore()
@@ -41,6 +46,7 @@ export const router = createBrowserRouter([
       { path: '/client/orders/:orderId/tracking', element: <ClientTrackingContainer /> },
       { path: '/client/orders/:orderId/dispute', element: <DisputeContainer /> },
       { path: '/client/notifications', element: <NotificationsContainer /> },
+      { path: '/client/profile', element: <ProfileContainer /> },
     ],
   },
 
@@ -49,8 +55,10 @@ export const router = createBrowserRouter([
     element: <RequireAuth allowedRoles={['vendor']} />,
     children: [
       { path: '/vendor', element: <VendorHomeContainer /> },
+      { path: '/vendor/catalogue', element: <VendorCatalogueContainer /> },
       { path: '/vendor/orders/:orderId', element: <VendorOrderDetailContainer /> },
       { path: '/vendor/notifications', element: <NotificationsContainer /> },
+      { path: '/vendor/profile', element: <ProfileContainer /> },
     ],
   },
 
@@ -59,7 +67,9 @@ export const router = createBrowserRouter([
     element: <RequireAuth allowedRoles={['agency']} />,
     children: [
       { path: '/agency', element: <AgencyDashboardContainer /> },
+      { path: '/agency/team', element: <AgencyTeamZonesContainer /> },
       { path: '/agency/notifications', element: <NotificationsContainer /> },
+      { path: '/agency/profile', element: <ProfileContainer /> },
     ],
   },
 
@@ -68,7 +78,10 @@ export const router = createBrowserRouter([
     element: <RequireAuth allowedRoles={['driver']} />,
     children: [
       { path: '/driver', element: <DriverHomeContainer /> },
+      { path: '/driver/orders/:orderId/navigation', element: <DriverNavigationContainer /> },
+      { path: '/driver/orders/:orderId/proof', element: <DriverProofContainer /> },
       { path: '/driver/notifications', element: <NotificationsContainer /> },
+      { path: '/driver/profile', element: <ProfileContainer /> },
     ],
   },
 ])

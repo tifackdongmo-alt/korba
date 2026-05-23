@@ -111,7 +111,12 @@ async def pay_order(order_id: UUID, body: PayRequest, db: DB, redis: Redis, curr
 
 @router.post("/{order_id}/status")
 async def update_order_status(order_id: UUID, body: StatusUpdate, db: DB, redis: Redis, current_user: CurrentUser) -> dict:
-    result = await db.execute(select(Order).where(Order.id == order_id))
+    from app.models.vendor import Vendor
+    from app.services.notifications import notify_status_change
+
+    result = await db.execute(
+        select(Order).options(joinedload(Order.delivery), joinedload(Order.vendor)).where(Order.id == order_id)
+    )
     order = result.scalar_one_or_none()
     if not order:
         raise HTTPException(status_code=404, detail="Commande introuvable")
@@ -121,6 +126,19 @@ async def update_order_status(order_id: UUID, body: StatusUpdate, db: DB, redis:
         await transition(order, new_status)
     except (ValueError, InvalidTransitionError) as e:
         raise HTTPException(status_code=400, detail=str(e))
+
+    # Récupérer l'owner du vendor pour notifier
+    vendor_owner_id = order.vendor.owner_id if order.vendor else None
+    driver_id = order.delivery.courier_id if order.delivery else None
+
+    if vendor_owner_id:
+        await notify_status_change(
+            db, redis, new_status,
+            client_id=order.client_id,
+            vendor_owner_id=vendor_owner_id,
+            driver_id=driver_id,
+            order_id=order.id,
+        )
 
     await redis.publish(f"order:{order_id}", f"status:{new_status.value}")
     return {"status": order.status.value}

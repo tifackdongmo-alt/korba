@@ -63,7 +63,7 @@ async def redis_subscriber() -> None:
     redis_client = aioredis.from_url(settings.REDIS_URL, decode_responses=True)
     pubsub = redis_client.pubsub()
     # Patterns pour tous les événements
-    await pubsub.psubscribe("order:*", "assignment:*", "location:*", "no_courier_available")
+    await pubsub.psubscribe("order:*", "assignment:*", "location:*", "notification:*", "no_courier_available")
 
     async for message in pubsub.listen():
         if message["type"] not in ("pmessage", "message"):
@@ -85,6 +85,9 @@ async def redis_subscriber() -> None:
         elif channel.startswith("location:"):
             # Broadcast aux rooms des commandes actives (géré côté client)
             await sio.emit("location:update", payload)
+        elif channel.startswith("notification:"):
+            user_id = channel.split(":", 1)[1]
+            await sio.emit("notification:new", payload, room=f"user:{user_id}")
         elif channel == "no_courier_available":
             await sio.emit("assignment:no_courier", {"delivery_id": payload})
 
