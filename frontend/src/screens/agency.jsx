@@ -1,5 +1,6 @@
 // agency.jsx — Agence (vert premium)
 // Dashboard, Profil agence, Équipe & Zones
+import { Phone, Icon, Avatar, Stars, TabBar, Chip, Logo, AppBar, MapBg, ProductImg, ROLE, StatusBar } from './components.jsx';
 
 function AgencyDashboard() {
   return (

@@ -1,5 +1,6 @@
 // driver.jsx — Livreur (bleu ciel)
 // Home missions, Navigation active, Preuve livraison
+import { Phone, Icon, Avatar, Stars, TabBar, Chip, Logo, AppBar, MapBg, ProductImg, ROLE, StatusBar } from './components.jsx';
 
 function DriverHome() {
   return (

@@ -1,5 +1,6 @@
 // vendor.jsx — Vendeur (violet/indigo)
 // Home, Catalogue boutique, Commande détail
+import { Phone, Icon, Avatar, Stars, TabBar, Chip, Logo, AppBar, MapBg, ProductImg, ROLE, StatusBar } from './components.jsx';
 
 function VendorHome() {
   return (

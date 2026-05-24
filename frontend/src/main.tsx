@@ -6,6 +6,17 @@ import { router } from './router'
 import './styles/tokens.css'
 import './index.css'
 
+// On page load, clear demo sessions so the user re-selects a role each time
+try {
+  const raw = localStorage.getItem('korba-auth')
+  if (raw) {
+    const parsed = JSON.parse(raw)
+    if (parsed?.state?.isDemo) {
+      localStorage.removeItem('korba-auth')
+    }
+  }
+} catch { /* ignore */ }
+
 const queryClient = new QueryClient({
   defaultOptions: {
     queries: { staleTime: 30000, retry: 1 },

@@ -1,5 +1,6 @@
 // client.jsx — Client screens (orange épuré)
 // Home, Catalogue, Profil Agence, Détail produit, Checkout, Tracking, Validation+Avis
+import { Phone, Icon, Avatar, Stars, TabBar, Chip, Logo, AppBar, MapBg, ProductImg, ROLE, StatusBar } from './components.jsx';
 
 function ClientHome() {
   return (

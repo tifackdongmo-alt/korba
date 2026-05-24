@@ -9,14 +9,19 @@ class Settings(BaseSettings):
     APP_NAME: str = "Korba API"
     APP_VERSION: str = "1.0.0"
     DEBUG: bool = False
+    DEV_MODE: bool = True  # SQLite + in-memory Redis + OTP fixe
     SECRET_KEY: str = "change-me-in-production"
-    ALLOWED_ORIGINS: list[str] = ["http://localhost:3000", "http://localhost:5173"]
+    ALLOWED_ORIGINS: list[str] = [
+        "http://localhost:3000", "http://localhost:3001", "http://localhost:3002",
+        "http://localhost:3003", "http://localhost:3004", "http://localhost:3005",
+        "http://localhost:3006", "http://localhost:5173",
+    ]
 
     # Database
-    DATABASE_URL: str = "postgresql+asyncpg://korba:korba@localhost:5432/korba"
-    DATABASE_URL_SYNC: str = "postgresql+psycopg2://korba:korba@localhost:5432/korba"
+    DATABASE_URL: str = "sqlite+aiosqlite:///./korba_dev.db"
+    DATABASE_URL_SYNC: str = "sqlite:///./korba_dev.db"
 
-    # Redis
+    # Redis (ignoré en DEV_MODE)
     REDIS_URL: str = "redis://localhost:6379/0"
 
     # JWT

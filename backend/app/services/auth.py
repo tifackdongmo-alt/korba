@@ -18,16 +18,20 @@ def _make_otp() -> str:
     return "".join(secrets.choice(string.digits) for _ in range(OTP_LENGTH))
 
 
+DEV_OTP = "000000"
+
+
 async def send_otp(redis_client: aioredis.Redis, phone: str) -> str:
+    if settings.DEV_MODE:
+        # En mode dev : OTP fixe, pas de SMS
+        return DEV_OTP
+
     otp = _make_otp()
     key = f"{OTP_PREFIX}{phone}"
     await redis_client.setex(key, settings.OTP_EXPIRE_MINUTES * 60, otp)
 
-    # TODO: intégrer AfricasTalking en production
-    # Pour le dev, le code est retourné directement
     if settings.AFRICAS_TALKING_API_KEY:
         import africas_talking  # type: ignore[import]
-
         africas_talking.initialize(settings.AFRICAS_TALKING_USERNAME, settings.AFRICAS_TALKING_API_KEY)
         sms = africas_talking.SMS
         sms.send(f"[Korba] Votre code de vérification : {otp}", [phone])
@@ -36,6 +40,9 @@ async def send_otp(redis_client: aioredis.Redis, phone: str) -> str:
 
 
 async def verify_otp(redis_client: aioredis.Redis, phone: str, otp: str) -> bool:
+    if settings.DEV_MODE:
+        return otp == DEV_OTP
+
     key = f"{OTP_PREFIX}{phone}"
     stored = await redis_client.get(key)
     if stored and stored.decode() == otp:

@@ -15,7 +15,11 @@ from app.services.auth import decode_access_token
 _bearer = HTTPBearer()
 
 
-async def get_redis() -> aioredis.Redis:  # type: ignore[override]
+async def get_redis():  # type: ignore[return]
+    if settings.DEV_MODE:
+        from app.dev_redis import get_dev_redis
+        yield get_dev_redis()
+        return
     client = aioredis.from_url(settings.REDIS_URL, decode_responses=False)
     try:
         yield client
@@ -50,4 +54,4 @@ def require_role(*roles: UserRole):
 
 CurrentUser = Annotated[User, Depends(get_current_user)]
 DB = Annotated[AsyncSession, Depends(get_db)]
-Redis = Annotated[aioredis.Redis, Depends(get_redis)]
+Redis = Annotated[object, Depends(get_redis)]

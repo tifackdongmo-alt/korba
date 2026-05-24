@@ -1,4 +1,5 @@
 // shared.jsx — Notifications, Settings/Profil, Litige & support
+import { Phone, Icon, Avatar, Stars, TabBar, Chip, Logo, AppBar, MapBg, ProductImg, ROLE, StatusBar } from './components.jsx';
 
 function NotificationsScreen() {
   return (

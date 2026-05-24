@@ -11,15 +11,43 @@ from app.socket_events import sio, start_redis_subscriber
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):  # type: ignore[type-arg]
-    await start_redis_subscriber()
+    if settings.DEV_MODE:
+        # Créer toutes les tables SQLite si elles n'existent pas
+        from app.database import engine
+        from app.models import base  # noqa: F401 — importe tous les modèles
+        import app.models.user, app.models.agency, app.models.vendor  # noqa: F401
+        import app.models.product, app.models.order, app.models.delivery  # noqa: F401
+        import app.models.payment, app.models.notification  # noqa: F401
+        import app.models.dispute  # noqa: F401
+        from sqlalchemy import text
+        async with engine.begin() as conn:
+            # SQLite ne supporte pas GEOMETRY — on patch les colonnes géo
+            await conn.run_sync(lambda sync_conn: _create_tables_safe(sync_conn))
+    else:
+        await start_redis_subscriber()
     yield
+
+
+def _create_tables_safe(conn):  # type: ignore[no-untyped-def]
+    from app.database import Base
+    from sqlalchemy import String, JSON, Text
+    # Remplacer tous les types PostgreSQL incompatibles avec SQLite
+    _pg_types = {"Geometry", "Geography", "JSONB", "ARRAY"}
+    for table in Base.metadata.tables.values():
+        for col in list(table.columns):
+            type_name = type(col.type).__name__
+            if type_name in ("Geometry", "Geography"):
+                col.type = String(255)
+            elif type_name in ("JSONB", "ARRAY"):
+                col.type = JSON()
+    Base.metadata.create_all(conn)
 
 
 app = FastAPI(
     title=settings.APP_NAME,
     version=settings.APP_VERSION,
-    docs_url="/docs" if settings.DEBUG else None,
-    redoc_url="/redoc" if settings.DEBUG else None,
+    docs_url="/docs" if (settings.DEBUG or settings.DEV_MODE) else None,
+    redoc_url=None,
     lifespan=lifespan,
 )
 

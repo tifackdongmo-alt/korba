@@ -1,5 +1,6 @@
 // components.jsx — shared primitives for Korba screens
 // Phone frame, status bar, icons, role context, helpers
+import React from 'react';
 
 const ROLE = {
   client:  { id:'client',  name:'Client',  accent:'var(--client)',  deep:'var(--client-deep)',  tint:'var(--client-tint)',  tint2:'var(--client-tint-2)',  glass:'var(--client-glass)' },
