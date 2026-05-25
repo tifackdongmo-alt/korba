@@ -9,8 +9,14 @@ import { ClientPaymentChoiceContainer } from '@/containers/ClientPaymentChoiceCo
 import { ClientCheckoutContainer } from '@/containers/ClientCheckoutContainer'
 import { ClientOrdersContainer } from '@/containers/ClientOrdersContainer'
 import { ClientTrackingContainer } from '@/containers/ClientTrackingContainer'
+import { ClientEscrowListContainer } from '@/containers/ClientEscrowListContainer'
+import { ClientEscrowDetailContainer } from '@/containers/ClientEscrowDetailContainer'
 import { DisputeContainer } from '@/containers/DisputeContainer'
+import { DisputeDetailContainer } from '@/containers/DisputeDetailContainer'
 import { MessagingContainer } from '@/containers/MessagingContainer'
+import { MessagesInboxContainer } from '@/containers/MessagesInboxContainer'
+import { ContactProfileContainer } from '@/containers/ContactProfileContainer'
+import { SignupContainer } from '@/containers/SignupContainer'
 import { VendorHomeContainer } from '@/containers/VendorHomeContainer'
 import { VendorOrderDetailContainer } from '@/containers/VendorOrderDetailContainer'
 import { VendorCatalogueContainer } from '@/containers/VendorCatalogueContainer'
@@ -45,6 +51,7 @@ function RoleRedirect() {
 export const router = createBrowserRouter([
   { path: '/', element: <RoleRedirect /> },
   { path: '/login', element: <AuthContainer /> },
+  { path: '/signup/:role', element: <SignupContainer /> },
 
   // Client
   {
@@ -61,7 +68,13 @@ export const router = createBrowserRouter([
         { path: '/client/orders/:orderId/tracking', element: <ClientTrackingContainer /> },
         { path: '/client/orders/:orderId/dispute', element: <DisputeContainer /> },
         { path: '/client/orders/:orderId/messaging', element: <MessagingContainer /> },
+        { path: '/client/escrow', element: <ClientEscrowListContainer /> },
+        { path: '/client/escrow/:escrowId', element: <ClientEscrowDetailContainer /> },
+        { path: '/client/messages', element: <MessagesInboxContainer /> },
         { path: '/client/messages/:conversationId', element: <MessagingContainer /> },
+        { path: '/client/contacts/:contactId', element: <ContactProfileContainer /> },
+        { path: '/client/disputes', element: <MessagesInboxContainer /> },
+        { path: '/client/disputes/:disputeId', element: <DisputeDetailContainer /> },
         { path: '/client/notifications', element: <NotificationsContainer /> },
         { path: '/client/profile', element: <ProfileContainer /> },
       ],
@@ -78,7 +91,10 @@ export const router = createBrowserRouter([
         { path: '/vendor/catalogue', element: <VendorCatalogueContainer /> },
         { path: '/vendor/orders/:orderId', element: <VendorOrderDetailContainer /> },
         { path: '/vendor/partners', element: <VendorPartnersContainer /> },
+        { path: '/vendor/messages', element: <MessagesInboxContainer /> },
         { path: '/vendor/messages/:conversationId', element: <MessagingContainer /> },
+        { path: '/vendor/contacts/:contactId', element: <ContactProfileContainer /> },
+        { path: '/vendor/disputes/:disputeId', element: <DisputeDetailContainer /> },
         { path: '/vendor/notifications', element: <NotificationsContainer /> },
         { path: '/vendor/profile', element: <ProfileContainer /> },
       ],
@@ -97,6 +113,10 @@ export const router = createBrowserRouter([
         { path: '/agency/drivers', element: <AgencyDriversContainer /> },
         { path: '/agency/ratings', element: <AgencyRatingsContainer /> },
         { path: '/agency/revenue', element: <AgencyRevenueContainer /> },
+        { path: '/agency/messages', element: <MessagesInboxContainer /> },
+        { path: '/agency/messages/:conversationId', element: <MessagingContainer /> },
+        { path: '/agency/contacts/:contactId', element: <ContactProfileContainer /> },
+        { path: '/agency/disputes/:disputeId', element: <DisputeDetailContainer /> },
         { path: '/agency/notifications', element: <NotificationsContainer /> },
         { path: '/agency/profile', element: <ProfileContainer /> },
       ],
@@ -114,7 +134,10 @@ export const router = createBrowserRouter([
         { path: '/driver/orders/:orderId/proof', element: <DriverProofContainer /> },
         { path: '/driver/history', element: <DriverHistoryContainer /> },
         { path: '/driver/earnings', element: <DriverEarningsContainer /> },
+        { path: '/driver/messages', element: <MessagesInboxContainer /> },
         { path: '/driver/messages/:conversationId', element: <MessagingContainer /> },
+        { path: '/driver/contacts/:contactId', element: <ContactProfileContainer /> },
+        { path: '/driver/disputes/:disputeId', element: <DisputeDetailContainer /> },
         { path: '/driver/notifications', element: <NotificationsContainer /> },
         { path: '/driver/profile', element: <ProfileContainer /> },
       ],

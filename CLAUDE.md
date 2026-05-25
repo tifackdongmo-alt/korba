@@ -5,19 +5,23 @@
 
 ---
 
-## ÉTAT DU PROJET — Mise à jour : 2026-05-24
+## ÉTAT DU PROJET — Mise à jour : 2026-05-25
 
 **Korba** est une marketplace de livraison rapide (Dakar, Sénégal) — 4 rôles : client, vendeur, agence, livreur.
 
 ### Avancement
-- ✅ Frontend React 18 + TypeScript + Vite complet (proto → app interactive)
-- ✅ 27 containers standalone couvrant tous les écrans
-- ✅ Auth Zustand persistée (mode démo fonctionnel, 0 bug navigation)
+- ✅ Frontend React 18 + TypeScript + Vite (33 containers standalone)
+- ✅ Auth Zustand persistée + bug navigation corrigé
 - ✅ Panier Zustand connecté (addItem, checkout, badge AppLayout)
-- ✅ Bottom nav bar mobile (4 onglets par rôle, couleurs rôle)
-- ✅ Messagerie temps réel simulée (MessagingContainer partagé)
-- ✅ Machine d'états commande côté UI (vendeur + livreur)
-- ⏳ Backend FastAPI — modèles créés, endpoints partiels (pas encore branché au frontend)
+- ✅ Bottom nav bar mobile (4-5 onglets par rôle, badge unread messages)
+- ✅ **Système escrow complet** : store, liste, détail, 3 actions (accepter/refuser/litige)
+- ✅ **Messagerie refondue** : Inbox style (liste conversations) + onglet Litiges + profil contact
+- ✅ **Système litiges** : DisputeContainer signale → DisputeDetailContainer chat avec agent
+- ✅ **Inscription complète** : SignupContainer multi-étapes (4 rôles, 4-5 steps avec OTP démo `1234`)
+- ✅ **Mode tabs AuthContainer** : Démo / Inscription / Connexion
+- ✅ Machine d'états commande côté UI (vendeur + livreur + client)
+- ✅ Touch targets ≥44px, focus states visibles (audit ui-ux-pro-max)
+- ⏳ Backend FastAPI — non branché
 - ⏳ Paiements réels Orange Money / Wave — non intégrés
 - ⏳ Socket.io temps réel — non intégré
 - ⏳ OTP SMS AfricasTalking — non intégré
@@ -132,6 +136,12 @@ korba/frontend/src/
 
 ## ROUTES COMPLÈTES
 
+### Public
+| Route | Container |
+|-------|-----------|
+| `/login` | AuthContainer (3 modes : Démo / Inscription / Connexion) |
+| `/signup/:role` | SignupContainer (4-5 étapes selon rôle) |
+
 ### Client (`/client/*`)
 | Route | Container |
 |-------|-----------|
@@ -144,7 +154,13 @@ korba/frontend/src/
 | `/client/orders/:orderId/tracking` | ClientTrackingContainer |
 | `/client/orders/:orderId/dispute` | DisputeContainer |
 | `/client/orders/:orderId/messaging` | MessagingContainer |
+| `/client/escrow` | ClientEscrowListContainer |
+| `/client/escrow/:escrowId` | ClientEscrowDetailContainer |
+| `/client/messages` | MessagesInboxContainer |
 | `/client/messages/:conversationId` | MessagingContainer |
+| `/client/contacts/:contactId` | ContactProfileContainer |
+| `/client/disputes` | MessagesInboxContainer (onglet litiges) |
+| `/client/disputes/:disputeId` | DisputeDetailContainer |
 | `/client/notifications` | NotificationsContainer |
 | `/client/profile` | ProfileContainer |
 
@@ -155,7 +171,10 @@ korba/frontend/src/
 | `/vendor/catalogue` | VendorCatalogueContainer |
 | `/vendor/orders/:orderId` | VendorOrderDetailContainer |
 | `/vendor/partners` | VendorPartnersContainer |
+| `/vendor/messages` | MessagesInboxContainer |
 | `/vendor/messages/:conversationId` | MessagingContainer |
+| `/vendor/contacts/:contactId` | ContactProfileContainer |
+| `/vendor/disputes/:disputeId` | DisputeDetailContainer |
 | `/vendor/notifications` | NotificationsContainer |
 | `/vendor/profile` | ProfileContainer |
 
@@ -182,6 +201,19 @@ korba/frontend/src/
 | `/driver/messages/:conversationId` | MessagingContainer |
 | `/driver/notifications` | NotificationsContainer |
 | `/driver/profile` | ProfileContainer |
+
+---
+
+## STORES ZUSTAND (persistés localStorage)
+
+| Store | Clé | Contenu |
+|-------|-----|---------|
+| `useAuthStore` | `korba-auth` | Session utilisateur (rôle, nom, isDemo) |
+| `useCartStore` | `korba-cart` | Panier client (items, vendorId, total) |
+| `useEscrowStore` | `korba-escrow` | Transactions escrow (statuts EN_ESCROW/LIBERE/REMBOURSE/LITIGE) |
+| `useMessagesStore` | `korba-messages` | Conversations inbox + messages + compteurs unread |
+| `useDisputesStore` | `korba-disputes` | Litiges + chat avec agent Korba |
+| `useAccountsStore` | `korba-accounts` | Comptes inscrits via SignupContainer (test hors démo) |
 
 ---
 
@@ -344,7 +376,10 @@ Implémenté côté UI dans :
 | Vendeur | Pharmacie Liberté 6 | orderId: `KB-2841`, `KB-2839`, `KB-2835` |
 | Agence | Rapid Dakar Express | driverId: `DRV-001` à `DRV-004` |
 | Livreur | Cheikh Ndao | deliveryId: `DEL-881`, `DEL-879` |
-| OTP vendeur | — | `4729` |
+| OTP vendeur (machine d'états) | — | `4729` |
+| OTP inscription (SignupContainer) | — | `1234` |
+| Escrow | — | `esc-001` (en cours), `esc-002` (libéré), `esc-003` (litige) |
+| Dispute | — | `disp-001` (Beauté Dakar, en cours) |
 
 ---
 

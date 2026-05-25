@@ -17,7 +17,7 @@ export function AuthContainer() {
   const [name, setName] = useState('')
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
-  const [showRealAuth, setShowRealAuth] = useState(false)
+  const [mode, setMode] = useState<'demo' | 'real' | 'signup'>('demo')
   const { setTokens, setUser, loginAsDemo } = useAuthStore()
   const navigate = useNavigate()
 
@@ -67,8 +67,27 @@ export function AuthContainer() {
           <p style={{ fontFamily: 'var(--font-sans)', color: 'var(--ink)', opacity: 0.5, fontSize: 14, margin: 0 }}>Livraison rapide · Afrique francophone</p>
         </div>
 
+        {/* Mode tabs */}
+        <div role="tablist" aria-label="Choisir mode" style={{ display: 'flex', gap: 4, background: 'rgba(0,0,0,0.05)', borderRadius: 14, padding: 4, marginBottom: 14 }}>
+          {([
+            { v: 'demo', label: '🚀 Démo', desc: 'Test rapide' },
+            { v: 'signup', label: '✨ Inscription', desc: 'Créer compte' },
+            { v: 'real', label: '🔐 Connexion', desc: 'Compte existant' },
+          ] as const).map(t => (
+            <button
+              key={t.v}
+              role="tab"
+              aria-selected={mode === t.v}
+              onClick={() => { setMode(t.v); setError(null); setStep('phone') }}
+              style={{ flex: 1, minHeight: 44, padding: '8px 6px', borderRadius: 10, border: 'none', cursor: 'pointer', fontWeight: 700, fontSize: 12, background: mode === t.v ? '#fff' : 'transparent', color: mode === t.v ? '#1a1a1a' : '#888', boxShadow: mode === t.v ? '0 1px 6px rgba(0,0,0,0.08)' : 'none', transition: 'all 0.15s' }}
+            >
+              {t.label}
+            </button>
+          ))}
+        </div>
+
         {/* Demo Mode */}
-        {!showRealAuth && (
+        {mode === 'demo' && (
           <div style={{ background: 'rgba(255,255,255,0.85)', borderRadius: 24, padding: 24, backdropFilter: 'blur(22px)', boxShadow: '0 4px 32px rgba(0,0,0,0.08)', marginBottom: 16 }}>
             <p style={{ fontFamily: 'var(--font-sans)', fontWeight: 600, fontSize: 15, color: 'var(--ink)', margin: '0 0 4px' }}>Tester l'application</p>
             <p style={{ fontFamily: 'var(--font-sans)', fontSize: 13, color: 'var(--ink)', opacity: 0.5, margin: '0 0 18px' }}>Choisissez un rôle pour explorer sans compte</p>
@@ -99,8 +118,37 @@ export function AuthContainer() {
           </div>
         )}
 
+        {/* Signup Mode */}
+        {mode === 'signup' && (
+          <div style={{ background: 'rgba(255,255,255,0.85)', borderRadius: 24, padding: 24, backdropFilter: 'blur(22px)', boxShadow: '0 4px 32px rgba(0,0,0,0.08)', marginBottom: 16 }}>
+            <p style={{ fontFamily: 'var(--font-sans)', fontWeight: 600, fontSize: 15, color: 'var(--ink)', margin: '0 0 4px' }}>Créer un nouveau compte</p>
+            <p style={{ fontFamily: 'var(--font-sans)', fontSize: 13, color: 'var(--ink)', opacity: 0.55, margin: '0 0 18px', lineHeight: 1.5 }}>
+              Choisissez votre rôle pour démarrer l'inscription. Vos infos seront sauvegardées localement (hors mode démo).
+            </p>
+            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10 }}>
+              {DEMO_ROLES.map(({ role, label, emoji, color, bg, desc }) => (
+                <button
+                  key={role}
+                  onClick={() => navigate(`/signup/${role}`)}
+                  aria-label={`S'inscrire comme ${label}`}
+                  style={{ border: 'none', borderRadius: 18, padding: '16px 12px', background: bg, cursor: 'pointer', textAlign: 'left', transition: 'transform 0.15s, box-shadow 0.15s', boxShadow: `0 4px 16px -8px ${color}66`, minHeight: 110 }}
+                  onMouseEnter={e => { e.currentTarget.style.transform = 'translateY(-2px)'; e.currentTarget.style.boxShadow = `0 8px 24px -8px ${color}88` }}
+                  onMouseLeave={e => { e.currentTarget.style.transform = ''; e.currentTarget.style.boxShadow = `0 4px 16px -8px ${color}66` }}
+                >
+                  <div style={{ fontSize: 26, marginBottom: 8 }}>{emoji}</div>
+                  <div style={{ fontFamily: 'var(--font-sans)', fontWeight: 700, fontSize: 14, color, marginBottom: 4 }}>S'inscrire comme {label}</div>
+                  <div style={{ fontFamily: 'var(--font-sans)', fontSize: 11, color: 'var(--ink)', opacity: 0.6, lineHeight: 1.4 }}>{desc}</div>
+                </button>
+              ))}
+            </div>
+            <div style={{ marginTop: 14, padding: 12, background: '#E0EEFF', borderRadius: 12, fontSize: 12, color: '#5BA4F0', lineHeight: 1.5 }}>
+              ℹ️ <strong>Mode test :</strong> votre compte est créé en local (localStorage). OTP démo = <strong>1234</strong>.
+            </div>
+          </div>
+        )}
+
         {/* Real Auth */}
-        {showRealAuth && (
+        {mode === 'real' && (
           <div style={{ background: 'rgba(255,255,255,0.85)', borderRadius: 24, padding: 24, backdropFilter: 'blur(22px)', boxShadow: '0 4px 32px rgba(0,0,0,0.08)', marginBottom: 16 }}>
             <h2 style={{ fontFamily: 'var(--font-sans)', margin: '0 0 20px', color: 'var(--ink)', fontSize: 18 }}>
               {step === 'phone' ? 'Connexion avec téléphone' : 'Entrez votre code'}
@@ -129,14 +177,11 @@ export function AuthContainer() {
           </div>
         )}
 
-        {/* Toggle */}
-        <div style={{ textAlign: 'center' }}>
-          <button
-            onClick={() => { setShowRealAuth(v => !v); setError(null); setStep('phone') }}
-            style={{ fontFamily: 'var(--font-sans)', background: 'none', border: 'none', color: 'var(--ink)', opacity: 0.45, fontSize: 13, cursor: 'pointer', textDecoration: 'underline' }}
-          >
-            {showRealAuth ? '← Retour au mode démo' : 'Connexion avec un vrai compte'}
-          </button>
+        {/* Help text */}
+        <div style={{ textAlign: 'center', padding: '0 20px' }}>
+          <p style={{ fontFamily: 'var(--font-sans)', color: 'var(--ink)', opacity: 0.5, fontSize: 12, margin: 0, lineHeight: 1.5 }}>
+            En continuant, vous acceptez les conditions d'utilisation et la politique de confidentialité Korba.
+          </p>
         </div>
       </div>
     </div>

@@ -1,5 +1,7 @@
 import { useState } from 'react'
-import { useNavigate, useParams } from 'react-router-dom'
+import { useNavigate, useParams, useSearchParams } from 'react-router-dom'
+import { useDisputesStore } from '@/store/disputes'
+import { useEscrowStore } from '@/store/escrow'
 
 const REASONS = [
   { value: 'article_manquant', label: 'Article manquant', icon: '📦' },
@@ -13,9 +15,30 @@ const REASONS = [
 export function DisputeContainer() {
   const { orderId } = useParams<{ orderId: string }>()
   const navigate = useNavigate()
+  const [searchParams] = useSearchParams()
+  const escrowIdParam = searchParams.get('escrowId')
+  const openDispute = useDisputesStore(s => s.openDispute)
+  const openDisputeEscrow = useEscrowStore(s => s.openDispute)
+  const getEscrow = useEscrowStore(s => s.getById)
   const [reason, setReason] = useState('')
   const [description, setDescription] = useState('')
   const [submitted, setSubmitted] = useState(false)
+  const [newDisputeId, setNewDisputeId] = useState<string | null>(null)
+
+  const handleSubmit = () => {
+    if (!reason || !description.trim()) return
+    const escrowTx = escrowIdParam ? getEscrow(escrowIdParam) : null
+    const dispId = openDispute({
+      orderId: orderId || 'demo-order',
+      escrowId: escrowIdParam || undefined,
+      vendorName: escrowTx?.vendorName || 'Vendeur',
+      reason,
+      description: description.trim(),
+    })
+    if (escrowIdParam) openDisputeEscrow(escrowIdParam, dispId)
+    setNewDisputeId(dispId)
+    setSubmitted(true)
+  }
 
   if (submitted) {
     return (
@@ -29,9 +52,22 @@ export function DisputeContainer() {
           <div style={{ fontWeight: 600, fontSize: 13, color: '#B85A10', marginBottom: 4 }}>📞 Vous pouvez aussi nous contacter</div>
           <div style={{ fontSize: 12, color: '#888' }}>Support Korba : +221 33 842 00 11</div>
         </div>
-        <button onClick={() => navigate('/client/orders')} style={{ padding: '14px 32px', borderRadius: 999, border: 'none', background: '#E87B36', color: '#fff', fontWeight: 700, fontSize: 15, cursor: 'pointer' }}>
-          Retour aux commandes
-        </button>
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 10, alignItems: 'stretch' }}>
+          {newDisputeId && (
+            <button
+              onClick={() => navigate(`/client/disputes/${newDisputeId}`)}
+              style={{ minHeight: 48, padding: '14px 24px', borderRadius: 999, border: 'none', background: '#e53e3e', color: '#fff', fontWeight: 700, fontSize: 15, cursor: 'pointer' }}
+            >
+              Suivre le litige
+            </button>
+          )}
+          <button
+            onClick={() => navigate('/client/messages')}
+            style={{ minHeight: 48, padding: '14px 24px', borderRadius: 999, border: '1.5px solid rgba(0,0,0,0.12)', background: '#fff', color: '#333', fontWeight: 600, fontSize: 14, cursor: 'pointer' }}
+          >
+            Retour à la boîte
+          </button>
+        </div>
       </div>
     )
   }
@@ -78,7 +114,7 @@ export function DisputeContainer() {
       </div>
 
       <button
-        onClick={() => reason && description && setSubmitted(true)}
+        onClick={handleSubmit}
         disabled={!reason || !description.trim()}
         style={{ width: '100%', padding: '15px', borderRadius: 18, border: 'none', background: reason && description ? '#e53e3e' : '#ccc', color: '#fff', fontWeight: 700, fontSize: 15, cursor: reason && description ? 'pointer' : 'default', transition: 'all 0.2s' }}
       >

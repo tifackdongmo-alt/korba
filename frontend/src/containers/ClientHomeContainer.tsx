@@ -63,6 +63,30 @@ export function ClientHomeContainer() {
         </button>
       </div>
 
+      {/* Quick access shortcuts */}
+      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10, marginBottom: 24 }}>
+        <button
+          onClick={() => navigate('/client/escrow')}
+          style={{ minHeight: 80, padding: 14, borderRadius: 18, border: 'none', background: '#fff', cursor: 'pointer', textAlign: 'left', boxShadow: '0 0 0 1px rgba(0,0,0,0.05)', display: 'flex', alignItems: 'center', gap: 12 }}
+        >
+          <div style={{ width: 44, height: 44, borderRadius: 12, background: '#FFF1E2', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 20 }} aria-hidden="true">🔒</div>
+          <div>
+            <div style={{ fontWeight: 700, fontSize: 13, color: '#1a1a1a' }}>Paiements</div>
+            <div style={{ fontSize: 11, color: '#888' }}>Fonds bloqués</div>
+          </div>
+        </button>
+        <button
+          onClick={() => navigate('/client/orders')}
+          style={{ minHeight: 80, padding: 14, borderRadius: 18, border: 'none', background: '#fff', cursor: 'pointer', textAlign: 'left', boxShadow: '0 0 0 1px rgba(0,0,0,0.05)', display: 'flex', alignItems: 'center', gap: 12 }}
+        >
+          <div style={{ width: 44, height: 44, borderRadius: 12, background: '#F0EDFF', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 20 }} aria-hidden="true">📦</div>
+          <div>
+            <div style={{ fontWeight: 700, fontSize: 13, color: '#1a1a1a' }}>Commandes</div>
+            <div style={{ fontSize: 11, color: '#888' }}>Historique</div>
+          </div>
+        </button>
+      </div>
+
       {/* Categories */}
       <div style={{ marginBottom: 24 }}>
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 12 }}>

@@ -132,17 +132,17 @@ export function ClientTrackingContainer() {
             ))}
           </div>
           <button
-            onClick={() => setRated(true)}
+            onClick={() => { setRated(true); setTimeout(() => navigate('/client/escrow/esc-001'), 800) }}
             disabled={!rating}
-            style={{ width: '100%', padding: '13px', borderRadius: 16, border: 'none', background: rating ? '#E87B36' : '#ccc', color: '#fff', fontWeight: 700, fontSize: 15, cursor: rating ? 'pointer' : 'default' }}
+            style={{ width: '100%', minHeight: 48, padding: '13px', borderRadius: 16, border: 'none', background: rating ? '#E87B36' : '#ccc', color: '#fff', fontWeight: 700, fontSize: 15, cursor: rating ? 'pointer' : 'default' }}
           >
-            Valider la livraison
+            Valider et gérer mon paiement →
           </button>
           <button
-            onClick={() => navigate(`/client/orders/${orderId}/dispute`)}
-            style={{ width: '100%', padding: '10px', borderRadius: 16, border: '1px solid #e53e3e', background: 'transparent', color: '#e53e3e', fontWeight: 600, fontSize: 13, cursor: 'pointer', marginTop: 8 }}
+            onClick={() => navigate(`/client/orders/${orderId}/dispute?escrowId=esc-001`)}
+            style={{ width: '100%', minHeight: 44, padding: '10px', borderRadius: 16, border: '1px solid #e53e3e', background: 'transparent', color: '#e53e3e', fontWeight: 600, fontSize: 13, cursor: 'pointer', marginTop: 8 }}
           >
-            Signaler un problème
+            ⚠ Signaler un problème
           </button>
         </div>
       )}
